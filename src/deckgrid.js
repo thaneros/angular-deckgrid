@@ -156,16 +156,28 @@ angular.module('akoenig.deckgrid').factory('Deckgrid', [
             }
 
             this.$$scope.columns = [];
-
+            this.columnWeights = new Array(self.$$scope.layout.columns);
+            for (var i=0; i<self.$$scope.layout.columns; i++) {
+                this.columnWeights[i] = 0;
+            }
+            
             angular.forEach(this.$$scope.model, function onIteration (card, index) {
                 var column = (index % self.$$scope.layout.columns) | 0;
+                var weight = card.featured_image_url ? 2 : 1;
 
                 if (!self.$$scope.columns[column]) {
                     self.$$scope.columns[column] = [];
                 }
 
                 card.$index = index;
-                self.$$scope.columns[column].push(card);
+                var smallestColumn = column;
+                for (var j=self.$$scope.layout.columns-1; j>=0; j--) {
+                    if (self.columnWeights[j] < self.columnWeights[smallestColumn]) {
+                        smallestColumn = j;
+                    }
+                }
+                self.$$scope.columns[smallestColumn].push(card);
+                self.columnWeights[smallestColumn] += weight;
             });
         };
 
